@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5ef">
+  <title>Wordwell — Find the words</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      color-scheme: light;
+      --paper: #f6f5ef;
+      --ink: #20231d;
+      --muted: #777a70;
+      --line: #e7e6dd;
+      --lime: #d7f078;
+      --lime-dark: #b6d84e;
+      --white: #fffefa;
+      --purple: #ece7fa;
+      --orange: #f6b78f;
+      --shadow: 0 18px 55px rgba(48, 51, 35, .065);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 0 48px 56px; }
+    header {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+    .brand-mark {
+      height: 34px; width: 34px; border-radius: 12px; background: var(--ink);
+      display: grid; place-items: center;
+    }
+    .brand-mark svg { width: 20px; height: 20px; }
+    .brand-name { font: 800 17px "Manrope", sans-serif; letter-spacing: -.7px; }
+    .brand-name span { color: #77972e; }
+    .header-right { display: flex; align-items: center; gap: 22px; }
+    .streak {
+      display: flex; align-items: center; gap: 7px; color: #52544b;
+      font-size: 13px; font-weight: 600;
+    }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+      background: #e9d8c8; color: #684f40; font-size: 12px; font-weight: 700;
+    }
+    main { padding-top: 40px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; margin-bottom: 27px; }
+    .eyebrow {
+      color: #777a70; text-transform: uppercase; letter-spacing: 1.65px;
+      font-size: 10px; font-weight: 700;
+    }
+    h1 {
+      font: 700 clamp(27px, 4vw, 36px)/1.16 "Manrope", sans-serif;
+      letter-spacing: -1.6px; margin: 9px 0 0;
+    }
+    .intro p { color: var(--muted); font-size: 14px; margin: 9px 0 0; }
+    .day-chip {
+      padding: 10px 14px; border-radius: 999px; background: #eeede5;
+      font-size: 12px; font-weight: 600; color: #5e6057; white-space: nowrap;
+    }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+    .lesson-card {
+      min-height: 514px; border-radius: 22px; padding: 27px 30px 24px;
+      background: var(--white); box-shadow: var(--shadow); border: 1px solid #eeede5;
+      position: relative; overflow: hidden;
+    }
+    .lesson-top { display: flex; align-items: center; justify-content: space-between; }
+    .session-label { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; }
+    .live-dot { height: 8px; width: 8px; border-radius: 50%; background: #91b936; box-shadow: 0 0 0 4px #eff6dd; }
+    .voice-tag { font-size: 10px; font-weight: 700; color: #73756d; letter-spacing: .9px; text-transform: uppercase; }
+    .word-area { text-align: center; padding: 42px 10px 22px; }
+    .word-meta { display: flex; align-items: center; justify-content: center; gap: 9px; }
+    .part-of-speech {
+      border-radius: 999px; background: #f1f0e9; padding: 5px 10px; font-size: 10px;
+      font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #73756d;
+    }
+    .difficulty { font-size: 11px; color: #a0a196; }
+    .word {
+      font: 800 clamp(43px, 8vw, 64px)/1.12 "Manrope", sans-serif;
+      letter-spacing: -3.4px; margin: 12px 0 5px;
+    }
+    .pronunciation { font-size: 13px; color: #898b82; }
+    .word-audio {
+      width: 35px; height: 35px; border: 1px solid var(--line); background: transparent;
+      border-radius: 50%; display: inline-grid; place-items: center; vertical-align: middle;
+      margin-left: 9px; cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .word-audio:hover { background: var(--lime); transform: scale(1.05); }
+    .coach-bubble {
+      max-width: 465px; min-height: 58px; margin: 2px auto 19px; padding: 14px 18px;
+      background: #f6f5ef; border-radius: 14px; text-align: center;
+      color: #53564c; font-size: 13px; line-height: 1.55;
+    }
+    .coach-bubble strong { color: var(--ink); }
+    .meaning-box {
+      display: none; max-width: 465px; padding: 15px 18px; margin: -4px auto 17px;
+      border-radius: 13px; background: #f0f5e4; text-align: left; font-size: 13px; line-height: 1.55;
+    }
+    .meaning-box.visible { display: block; animation: appear .2s ease-out; }
+    .meaning-title { font-weight: 700; margin-bottom: 4px; }
+    .meaning-text { color: #55594c; }
+    @keyframes appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .answer-form { display: flex; gap: 8px; max-width: 465px; margin: 0 auto 13px; }
+    .answer-form input {
+      min-width: 0; flex: 1; padding: 12px 14px; border: 1px solid var(--line);
+      background: #fff; outline: none; border-radius: 11px; font-size: 12px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .answer-form input:focus { border-color: #9eba54; box-shadow: 0 0 0 3px #edf5d9; }
+    .answer-form input::placeholder { color: #a4a59d; }
+    .icon-button {
+      width: 43px; flex: 0 0 43px; border: 0; border-radius: 11px;
+      background: var(--lime); cursor: pointer; display: grid; place-items: center;
+      transition: background .2s, transform .2s;
+    }
+    .icon-button:hover { background: var(--lime-dark); transform: translateY(-1px); }
+    .actions { display: flex; justify-content: center; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .button {
+      display: inline-flex; gap: 8px; align-items: center; justify-content: center;
+      border: 1px solid var(--line); background: var(--white); border-radius: 11px;
+      padding: 10px 13px; font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: transform .18s, background .18s, border .18s;
+    }
+    .button:hover { transform: translateY(-1px); border-color: #c9cabb; }
+    .button.primary { background: var(--ink); border-color: var(--ink); color: white; padding: 11px 16px; }
+    .button.primary:hover { background: #383b32; }
+    .button.primary.listening { background: #a94b3e; border-color: #a94b3e; animation: pulse 1.3s infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 5px #f7e1dc; } }
+    .button svg, .icon-button svg { width: 15px; height: 15px; }
+    .lesson-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-top: 26px; padding-top: 17px; border-top: 1px solid #f0efe8;
+      color: #92948b; font-size: 10px;
+    }
+    .progress-copy { font-weight: 600; }
+    .progress-track { flex: 1; max-width: 180px; height: 4px; border-radius: 6px; background: #efeee7; overflow: hidden; }
+    .progress-fill { width: 20%; height: 100%; background: #a8c94d; border-radius: inherit; transition: width .3s; }
+    .next-button { border: 0; background: transparent; padding: 4px; display: flex; gap: 5px; align-items: center; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .next-button:hover { color: #6f8d2b; }
+    .sidebar { display: flex; flex-direction: column; gap: 15px; }
+    .side-card { border-radius: 18px; background: var(--white); padding: 21px; border: 1px solid #eeede5; box-shadow: var(--shadow); }
+    .side-title { display: flex; justify-content: space-between; align-items: center; font: 700 14px "Manrope", sans-serif; letter-spacing: -.3px; }
+    .tiny-link { font: 600 10px "DM Sans", sans-serif; color: #819941; }
+    .goal-row { display: flex; justify-content: space-between; align-items: center; margin: 19px 0 9px; }
+    .goal-label { font-size: 11px; color: #777a70; }
+    .goal-count { font: 700 12px "Manrope", sans-serif; }
+    .goal-track { width: 100%; height: 6px; border-radius: 9px; background: #efeee7; overflow: hidden; }
+    .goal-fill { height: 100%; width: 20%; background: #b9d963; border-radius: inherit; transition: width .3s; }
+    .goal-note { font-size: 10px; color: #97988f; margin-top: 9px; }
+    .week { display: flex; justify-content: space-between; margin-top: 20px; }
+    .day { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 9px; color: #a0a196; }
+    .day-mark { width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center; background: #f2f1eb; color: #a0a196; font-size: 10px; }
+    .day.done .day-mark { background: var(--lime); color: #414a2a; }
+    .day.today .day-mark { background: var(--ink); color: white; box-shadow: 0 0 0 3px #e9ebdf; }
+    .coach-card { background: var(--purple); border: 0; min-height: 147px; overflow: hidden; position: relative; }
+    .coach-card .side-title { position: relative; z-index: 1; }
+    .coach-card p { color: #676078; font-size: 11px; line-height: 1.6; margin: 10px 0 13px; max-width: 190px; position: relative; z-index: 1; }
+    .small-link { border: 0; padding: 0; background: none; color: #615482; font-size: 10px; font-weight: 700; cursor: pointer; position: relative; z-index: 1; }
+    .flower { position: absolute; width: 108px; height: 108px; right: -9px; bottom: -19px; opacity: .78; }
+    .word-list { list-style: none; padding: 0; margin: 15px 0 0; }
+    .word-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid #f0efe8; }
+    .word-list li:first-child { border-top: 0; padding-top: 0; }
+    .saved-word { font-size: 11px; font-weight: 600; }
+    .saved-tag { background: #f0f3e7; color: #768a42; border-radius: 999px; padding: 4px 7px; font-size: 9px; }
+    .toast {
+      position: fixed; z-index: 4; left: 50%; bottom: 24px; transform: translate(-50%, 15px);
+      background: #24271f; color: white; border-radius: 10px; padding: 12px 16px;
+      font-size: 12px; opacity: 0; pointer-events: none; transition: .2s; box-shadow: var(--shadow);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 820px) {
+      .shell { padding: 0 24px 40px; }
+      .layout { grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; }
+      .lesson-card { padding: 23px 20px 20px; }
+      .side-card { padding: 18px; }
+    }
+    @media (max-width: 650px) {
+      .shell { padding: 0 17px 30px; }
+      header { height: 68px; }
+      .header-right { gap: 13px; }
+      main { padding-top: 28px; }
+      .intro { align-items: start; }
+      .intro p { max-width: 265px; line-height: 1.5; }
+      .day-chip { font-size: 10px; padding: 8px 10px; }
+      .layout { grid-template-columns: 1fr; }
+      .lesson-card { min-height: auto; padding: 21px 17px 18px; }
+      .word-area { padding-top: 36px; }
+      .sidebar { display: grid; grid-template-columns: 1fr 1fr; }
+      .side-card:last-child { grid-column: 1 / -1; }
+      .coach-card { min-height: 150px; }
+      .lesson-footer { margin-top: 21px; }
+    }
+    @media (max-width: 410px) {
+      .sidebar { grid-template-columns: 1fr; }
+      .side-card:last-child { grid-column: auto; }
+      .voice-tag { font-size: 9px; }
+      .lesson-footer { gap: 7px; }
+      .progress-track { max-width: 80px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="#" aria-label="Wordwell home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 9.1 17l3.1-7.1 3.1 7.1 3.7-9.5" stroke="#D7F078" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-name">word<span>well</span></span>
+      </a>
+      <div class="header-right">
+        <div class="streak"><span aria-hidden="true">✦</span><span>3 day streak</span></div>
+        <div class="avatar" aria-label="Your profile">RM</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-label="Welcome">
+        <div>
+          <div class="eyebrow">Monday, November 16</div>
+          <h1>A little more word-wise.</h1>
+          <p>Five thoughtful minutes can change the way you say things.</p>
+        </div>
+        <div class="day-chip">✦ &nbsp; Your daily practice</div>
+      </section>
+
+      <div class="layout">
+        <section class="lesson-card" aria-label="Vocabulary practice">
+          <div class="lesson-top">
+            <div class="session-label"><span class="live-dot"></span><span id="session-status">Your word for today</span></div>
+            <div class="voice-tag" id="voice-status">Your voice, your pace</div>
+          </div>
+
+          <div class="word-area">
+            <div class="word-meta">
+              <span class="part-of-speech" id="part-of-speech">adjective</span>
+              <span class="difficulty">· &nbsp; a little uncommon</span>
+            </div>
+            <h2 class="word" id="word">ephemeral<button class="word-audio" id="listen-word" aria-label="Hear the word" title="Hear the word">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4h3l4 3V7l-4 3H4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15 9a4 4 0 0 1 0 6m2-8a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button></h2>
+            <div class="pronunciation" id="pronunciation">/ɪˈfem.ər.əl/</div>
+          </div>
+
+          <div class="coach-bubble" id="coach-message" aria-live="polite">I'm Lingo, your word-collecting companion. <strong>What do you think “ephemeral” means?</strong></div>
+          <div class="meaning-box" id="meaning-box" aria-live="polite">
+            <div class="meaning-title" id="meaning-title">It means...</div>
+            <div class="meaning-text" id="meaning-text">Lasting for a very short time; fleeting.</div>
+          </div>
+
+          <form class="answer-form" id="answer-form">
+            <label for="answer" class="sr-only">Type what you think the word means</label>
+            <input id="answer" autocomplete="off" placeholder="Type a guess, or use your voice…" />
+            <button type="submit" class="icon-button" aria-label="Send your answer" title="Send your answer">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 14-7-5 14-2.8-5.2L5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m11.2 13.8 3.3-3.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </form>
+
+          <div class="actions">
+            <button class="button primary" id="speak-answer">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span>Speak your guess</span>
+            </button>
+            <button class="button" id="show-meaning">Reveal meaning</button>
+            <button class="button" id="example-button">Hear an example</button>
+          </div>
+
+          <div class="lesson-footer">
+            <span class="progress-copy" id="progress-copy">Word 1 of 5</span>
+            <div class="progress-track" role="progressbar" aria-label="Words learned" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <button class="next-button" id="next-word">Next word <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <aside class="sidebar" aria-label="Your learning overview">
+          <section class="side-card">
+            <div class="side-title">Today's progress <span aria-hidden="true">↗</span></div>
+            <div class="goal-row"><span class="goal-label">Words explored</span><span class="goal-count" id="goal-count">1 / 5</span></div>
+            <div class="goal-track" role="progressbar" aria-label="Daily goal" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1">
+              <div class="goal-fill" id="goal-fill"></div>
+            </div>
+            <div class="goal-note" id="goal-note">Four more to meet your daily goal</div>
+            <div class="week" aria-label="This week's activity">
+              <div class="day today"><span class="day-mark">•</span><span>M</span></div>
+              <div class="day"><span class="day-mark">·</span><span>T</span></div>
+              <div class="day"><span class="day-mark">·</span><span>W</span></div>
+              <div class="day"><span class="day-mark">·</span><span>T</span></div>
+              <div class="day"><span class="day-mark">·</span><span>F</span></div>
+              <div class="day"><span class="day-mark">·</span><span>S</span></div>
+              <div class="day"><span class="day-mark">·</span><span>S</span></div>
+            </div>
+          </section>
+
+          <section class="side-card coach-card">
+            <div class="side-title">A note from Lingo <span aria-hidden="true">✳</span></div>
+            <p id="coach-tip">Words stick better when you connect them to a moment in your own life.</p>
+            <button class="small-link" id="tip-button">Give me a prompt <span aria-hidden="true">→</span></button>
+            <svg class="flower" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+              <path d="M59 55c-16-28 9-45 18-31 6 9-5 24-18 31Zm3 1c3-32 33-31 31-14-1 11-19 16-31 14Zm2 2c23-23 45-5 34 8-7 8-25 2-34-8Zm-1 4c29-11 42 17 26 23-10 4-23-9-26-23Zm-4 1c15 26-9 45-18 31-6-9 5-24 18-31Zm-4-3c-3 32-33 31-31 14 1-11 19-16 31-14Zm-2-2c-23 23-45 5-34-8 7-8 25-2 34 8Zm1-4C25 65 12 37 28 31c10-4 23 9 26 23Z" fill="#c6b7ed"/>
+              <circle cx="60" cy="60" r="7" fill="#e4a77d"/>
+            </svg>
+          </section>
+
+          <section class="side-card">
+            <div class="side-title">Words in your pocket <span class="tiny-link">Today</span></div>
+            <ul class="word-list" id="word-list">
+              <li><span class="saved-word">ephemeral</span><span class="saved-tag">fleeting</span></li>
+              <li><span class="saved-word">serendipity</span><span class="saved-tag">happy chance</span></li>
+              <li><span class="saved-word">resilient</span><span class="saved-tag">bounces back</span></li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const words = [
+        { word: "ephemeral", part: "adjective", phonetic: "/ɪˈfem.ər.əl/", meaning: "Lasting for a very short time; fleeting.", hints: ["short", "brief", "fleeting", "temporary", "quick", "moment"], example: "The little café became our favorite place, even if our visit was ephemeral." },
+        { word: "serendipity", part: "noun", phonetic: "/ˌser.ənˈdɪp.ə.ti/", meaning: "A happy or valuable discovery made by chance.", hints: ["chance", "accident", "unexpected", "lucky", "fortunate", "discovery"], example: "Finding that book in the tiny shop was pure serendipity." },
+        { word: "resilient", part: "adjective", phonetic: "/rɪˈzɪl.jənt/", meaning: "Able to recover or bounce back after difficulty.", hints: ["recover", "bounce", "strong", "tough", "adapt", "overcome"], example: "After a difficult year, the resilient garden bloomed again." },
+        { word: "eloquent", part: "adjective", phonetic: "/ˈel.ə.kwənt/", meaning: "Fluent or persuasive in speaking or writing.", hints: ["persuasive", "expressive", "fluent", "articulate", "speak", "words"], example: "Her eloquent toast made everyone at the table pause and smile." },
+        { word: "diligent", part: "adjective", phonetic: "/ˈdɪl.ə.dʒənt/", meaning: "Careful and persistent in putting effort into a task.", hints: ["careful", "persistent", "hardworking", "thorough", "effort", "steady"], example: "With diligent practice, the new piano piece began to feel natural." }
+      ];
+      const tips = [
+        "Words stick better when you connect them to a moment in your own life.",
+        "Try using today's word in a sentence before the day is over.",
+        "Say it out loud once, then picture a moment that fits its meaning."
+      ];
+      let index = 0;
+      let explored = 1;
+      let tipIndex = 0;
+      let recognition;
+      let listening = false;
+      let toastTimer;
+      const $ = (id) => document.getElementById(id);
+      const synth = window.speechSynthesis;
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      function current() { return words[index]; }
+      function notify(message) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+      function say(text) {
+        if (!synth) { notify("Speech playback isn't available in this browser."); return; }
+        synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 0.92;
+        synth.speak(utterance);
+      }
+      function render() {
+        const item = current();
+        $("word").innerHTML = `${item.word}<button class="word-audio" id="listen-word" aria-label="Hear the word" title="Hear the word"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4h3l4 3V7l-4 3H4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15 9a4 4 0 0 1 0 6m2-8a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>`;
+        $("listen-word").addEventListener("click", () => say(`${item.word}. ${item.phonetic}`));
+        $("part-of-speech").textContent = item.part;
+        $("pronunciation").textContent = item.phonetic;
+        $("coach-message").innerHTML = `I'm Lingo, your word-collecting companion. <strong>What do you think “${item.word}” means?</strong>`;
+        $("meaning-text").textContent = item.meaning;
+        $("meaning-box").classList.remove("visible");
+        $("meaning-title").textContent = "It means...";
+        $("answer").value = "";
+        $("progress-copy").textContent = index === words.length - 1 && explored >= words.length ? "All 5 words explored" : `Word ${index + 1} of ${words.length}`;
+        $("progress-fill").style.width = `${Math.max(20, (index + 1) / words.length * 100)}%`;
+        document.querySelector(".lesson-card [role=\"progressbar\"]").setAttribute("aria-valuenow", String(index + 1));
+        $("goal-count").textContent = `${Math.min(explored, 5)} / 5`;
+        $("goal-fill").style.width = `${Math.min(explored, 5) / 5 * 100}%`;
+        const remaining = Math.max(0, 5 - explored);
+        $("goal-note").textContent = remaining ? `${remaining} more to meet your daily goal` : "Daily goal complete — lovely work!";
+        $("session-status").textContent = "Your word for today";
+      }
+      function reveal(title) {
+        $("meaning-title").textContent = title || "It means...";
+        $("meaning-text").textContent = current().meaning;
+        $("meaning-box").classList.add("visible");
+      }
+      function answer(text) {
+        const guess = text.trim();
+        if (!guess) { notify("Try a guess first, or reveal the meaning."); return; }
+        const lower = guess.toLowerCase();
+        const matched = current().hints.some((hint) => lower.includes(hint));
+        if (matched) {
+          $("coach-message").innerHTML = `<strong>That's it!</strong> You said “${escapeHtml(guess)}.” Nice connection.`;
+          reveal("You've got it");
+          say(`That's it! ${current().word} means ${current().meaning}`);
+        } else {
+          $("coach-message").innerHTML = `<strong>Good thinking.</strong> You said “${escapeHtml(guess)}.” Here's the meaning to keep in your pocket.`;
+          reveal("A little clue");
+          say(`Good thinking. ${current().word} means ${current().meaning}`);
+        }
+        exploreCurrent();
+      }
+      function escapeHtml(text) {
+        return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      }
+      function exploreCurrent() {
+        explored = Math.max(explored, index + 1);
+        $("goal-count").textContent = `${Math.min(explored, 5)} / 5`;
+        $("goal-fill").style.width = `${Math.min(explored, 5) / 5 * 100}%`;
+        const remaining = Math.max(0, 5 - explored);
+        $("goal-note").textContent = remaining ? `${remaining} more to meet your daily goal` : "Daily goal complete — lovely work!";
+      }
+      function listen() {
+        if (!Recognition) {
+          $("answer").focus();
+          notify("Voice input isn't supported here — type your guess instead.");
+          return;
+        }
+        if (listening && recognition) { recognition.stop(); return; }
+        recognition = new Recognition();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => {
+          listening = true;
+          $("speak-answer").classList.add("listening");
+          $("speak-answer").querySelector("span").textContent = "Listening… tap to stop";
+          $("session-status").textContent = "I'm listening";
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          $("answer").value = transcript;
+          answer(transcript);
+        };
+        recognition.onerror = (event) => {
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            notify("Microphone access was blocked. You can type your answer instead.");
+          } else if (event.error !== "no-speech" && event.error !== "aborted") {
+            notify("I couldn't catch that. Try again or type your answer.");
+          }
+        };
+        recognition.onend = () => {
+          listening = false;
+          $("speak-answer").classList.remove("listening");
+          $("speak-answer").querySelector("span").textContent = "Speak your guess";
+          $("session-status").textContent = "Your word for today";
+        };
+        try { recognition.start(); }
+        catch (error) { notify("The microphone couldn't start. Please try again."); }
+      }
+
+      $("answer-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        answer($("answer").value);
+      });
+      $("speak-answer").addEventListener("click", listen);
+      $("listen-word").addEventListener("click", () => say(`${current().word}. ${current().phonetic}`));
+      $("show-meaning").addEventListener("click", () => reveal("It means..."));
+      $("example-button").addEventListener("click", () => {
+        const item = current();
+        reveal("In a sentence");
+        $("meaning-text").textContent = item.example;
+        say(`Here's an example. ${item.example}`);
+      });
+      $("next-word").addEventListener("click", () => {
+        if (index < words.length - 1) {
+          index += 1;
+          explored = Math.max(explored, index + 1);
+          render();
+        } else {
+          index = 0;
+          explored = 1;
+          render();
+          notify("A fresh round is ready. You're doing wonderfully!");
+        }
+      });
+      $("tip-button").addEventListener("click", () => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        $("coach-tip").textContent = tips[tipIndex];
+      });
+      $("voice-status").textContent = Recognition ? "Voice mode · ready" : "Voice mode · type to answer";
+      render();
+    })();
+  </script>
+</body>
+</html>
